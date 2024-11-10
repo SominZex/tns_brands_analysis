@@ -8,21 +8,26 @@ def profit_margin_analysis(data, selected_brands):
     # Filter data for selected brands
     filtered_data = data[data['brandName'].isin(selected_brands)]
 
-    # Ensure sellingPrice and costPrice are numeric
+    # Ensure sellingPrice, costPrice, and quantity are numeric
     filtered_data['sellingPrice'] = pd.to_numeric(filtered_data['sellingPrice'], errors='coerce')
     filtered_data['costPrice'] = pd.to_numeric(filtered_data['costPrice'], errors='coerce')
+    filtered_data['quantity'] = pd.to_numeric(filtered_data['quantity'], errors='coerce')
 
-    # Group by brand and calculate total sellingPrice and costPrice
+    # Calculate total selling price and total cost price by multiplying by quantity
+    filtered_data['total_sellingPrice'] = filtered_data['sellingPrice'] * filtered_data['quantity']
+    filtered_data['total_costPrice'] = filtered_data['costPrice'] * filtered_data['quantity']
+
+    # Group by brand and sum the total sellingPrice and total costPrice
     brand_grouped = (filtered_data.groupby('brandName')
-                     .agg({'sellingPrice': 'sum', 'costPrice': 'sum'})
+                     .agg({'total_sellingPrice': 'sum', 'total_costPrice': 'sum'})
                      .reset_index())
 
     # Calculate average profit margin based on summed values
-    brand_grouped['avg_profit_margin'] = ((brand_grouped['sellingPrice'] - brand_grouped['costPrice']) / 
-                                          brand_grouped['sellingPrice']) * 100
+    brand_grouped['avg_profit_margin'] = ((brand_grouped['total_sellingPrice'] - brand_grouped['total_costPrice']) / 
+                                          brand_grouped['total_sellingPrice']) * 100
 
-    # Display data table with average profit margin
-    st.dataframe(brand_grouped[['brandName', 'avg_profit_margin']])
+    # Display data table with all required features, including total_sellingPrice and total_costPrice
+    st.dataframe(brand_grouped)
 
     # Sidebar options for chart customization
     st.sidebar.subheader("Profit Margin Chart Settings")

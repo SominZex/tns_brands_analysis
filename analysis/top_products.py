@@ -8,27 +8,31 @@ def top_products_analysis(data, selected_brands):
     # Filter data for selected brands
     filtered_data = data[data['brandName'].isin(selected_brands)]
 
-    # Calculate additional metrics
+    # Calculate profit and profit margin (per item)
     filtered_data['profit'] = filtered_data['sellingPrice'] - filtered_data['costPrice']
     filtered_data['profit_margin'] = (filtered_data['profit'] / filtered_data['sellingPrice']) * 100
+
+    # Calculate total selling price and cost by multiplying with quantity
+    filtered_data['total_selling_price'] = filtered_data['sellingPrice'] * filtered_data['quantity']
+    filtered_data['total_cost_price'] = filtered_data['costPrice'] * filtered_data['quantity']
 
     # Group by productId, productName, and categoryName to calculate total sales, profit, cost, and quantity
     top_products = (filtered_data.groupby(['productId', 'productName', 'categoryName'])
                     .agg({
-                        'sellingPrice': 'sum', 
-                        'costPrice': 'sum',
+                        'total_selling_price': 'sum', 
+                        'total_cost_price': 'sum',
                         'profit': 'sum', 
                         'profit_margin': 'mean', 
                         'quantity': 'sum'
                     })
-                    .sort_values(by='sellingPrice', ascending=False)
+                    .sort_values(by='total_selling_price', ascending=False)
                     .reset_index())
 
     # Rename columns for clarity
     top_products.rename(columns={
-        'sellingPrice': 'Selling Price',
+        'total_selling_price': 'Selling Price',
         'quantity': 'Total Quantity',
-        'costPrice': 'Cost'
+        'total_cost_price': 'Cost'
     }, inplace=True)
 
     # Round the profit margin to 2 decimal places and add a percentage sign
@@ -56,7 +60,7 @@ def top_products_analysis(data, selected_brands):
     if chart_type == "Bar Chart":
         fig = px.bar(top_products, x='productName', y='Selling Price', title="Top Products by Sales",
                      labels={'Selling Price': 'Sales', 'productName': 'Product Name'},
-                     color='Selling Price', color_continuous_scale='Viridis', height=600)  # Use color scale
+                     color='Selling Price', color_continuous_scale='Viridis', height=600)
 
         # Add data labels if checkbox is selected
         if show_data_labels:
@@ -64,7 +68,7 @@ def top_products_analysis(data, selected_brands):
 
     elif chart_type == "Pie Chart":
         fig = px.pie(top_products, names='productName', values='Selling Price', title="Top Products by Sales",
-                     height=600, color='Selling Price', color_discrete_sequence=px.colors.qualitative.Set1)  # Apply color sequence
+                     height=600, color='Selling Price', color_discrete_sequence=px.colors.qualitative.Set1)
 
         # Add data labels if checkbox is selected
         if show_data_labels:
