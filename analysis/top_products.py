@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 def top_products_analysis(data, selected_brands):
-    st.subheader("Top Products Analysis")
+    st.markdown("<h1 style='text-align: center; color: green;'>Top Product Analysis</h1>", unsafe_allow_html=True)
 
     # Filter data for selected brands
     filtered_data = data[data['brandName'].isin(selected_brands)]
