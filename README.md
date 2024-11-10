@@ -1,4 +1,4 @@
-### The New Shop : Data Factory
+### Basic Brand Analysis
 
 ![images](https://github.com/user-attachments/assets/bdcc2907-32ef-48f9-b31d-043d820d9922)
 
