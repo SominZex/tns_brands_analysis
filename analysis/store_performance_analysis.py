@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-def store_performance_analysis(data, date_filtered_data, selected_brands):
+def store_performance_analysis(data, date_filtered_data, selected_brands, selected_stores):
     st.markdown("<h1 style='text-align: center; color: green;'>Stores Performance</h1>", unsafe_allow_html=True)
 
     # Calculate sales for all brands by store (using date_filtered_data)
@@ -15,6 +15,9 @@ def store_performance_analysis(data, date_filtered_data, selected_brands):
     filtered_data['total_selling_price'] = filtered_data['sellingPrice'] * filtered_data['quantity']
     filtered_data['total_cost_price'] = filtered_data['costPrice'] * filtered_data['quantity']
     filtered_data['profit'] = filtered_data['total_selling_price'] - filtered_data['total_cost_price']
+
+    # Filter data for selected stores
+    filtered_data = filtered_data[filtered_data['storeName'].isin(selected_stores)]
 
     # Aggregate data by storeName for filtered data
     store_performance = filtered_data.groupby('storeName').agg(

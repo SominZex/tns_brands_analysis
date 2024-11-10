@@ -170,7 +170,7 @@ if uploaded_file:
                 brand_performance_analysis(filtered_data, selected_brands, selected_stores)
                 weekly_sales_analysis(filtered_data, selected_brands, top_brands)
                 daily_sales_analysis(filtered_data, selected_brands, selected_stores)
-                store_performance_analysis(data, date_filtered_data, selected_brands)
+                store_performance_analysis(data, date_filtered_data, selected_brands, selected_stores)
                 hourly_sales_analysis(filtered_data, selected_brands)
                 category_breakdown_analysis(filtered_data, selected_brands)
                 profit_margin_analysis(filtered_data, selected_brands)
