@@ -56,7 +56,7 @@ def top_products_analysis(data, selected_brands):
     if chart_type == "Bar Chart":
         fig = px.bar(top_products, x='productName', y='Selling Price', title="Top Products by Sales",
                      labels={'Selling Price': 'Sales', 'productName': 'Product Name'},
-                     height=600)  # Set custom height for the chart
+                     color='Selling Price', color_continuous_scale='Viridis', height=600)  # Use color scale
 
         # Add data labels if checkbox is selected
         if show_data_labels:
@@ -64,7 +64,7 @@ def top_products_analysis(data, selected_brands):
 
     elif chart_type == "Pie Chart":
         fig = px.pie(top_products, names='productName', values='Selling Price', title="Top Products by Sales",
-                     height=600)  # Set custom height for the chart
+                     height=600, color='Selling Price', color_discrete_sequence=px.colors.qualitative.Set1)  # Apply color sequence
 
         # Add data labels if checkbox is selected
         if show_data_labels:
