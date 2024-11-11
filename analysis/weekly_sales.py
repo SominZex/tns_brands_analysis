@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
-
 def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     st.markdown("<h1 style='text-align: center; color: green;'>Weekly Sales</h1>", unsafe_allow_html=True)
 
@@ -64,7 +64,6 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
         .sort_values(by='day')
     )
 
-
     # Aggregate sales data based on brand, month, and dynamic week label
     filtered_data['month_year'] = filtered_data['orderDate'].dt.to_period('M') 
     filtered_data['week_number'] = filtered_data.groupby('month_year')['orderDate'].transform(
@@ -99,34 +98,53 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     # Calculate percentage growth for each week column relative to the previous week
     for i in range(1, len(week_columns)):
         week, prev_week = week_columns[i], week_columns[i - 1]
-        sales_by_week_growth[f"{week}_growth"] = (
-            (sales_by_week[week] - sales_by_week[prev_week]) / sales_by_week[prev_week]
-        ) * 100
+        # Handle division by zero
+        prev_week_sales = sales_by_week[prev_week]
+        growth = np.where(
+            prev_week_sales != 0,
+            ((sales_by_week[week] - prev_week_sales) / prev_week_sales) * 100,
+            0  # Set growth to 0% when previous week sales were 0
+        )
+        sales_by_week_growth[f"{week}_growth"] = growth
 
     # Remove 'month' and 'Week 5' columns along with 'Week 5_growth'
     columns_to_remove = ['month', 'Week 5', 'Week 5_growth']
     sales_by_week_growth = sales_by_week_growth.drop(columns=[col for col in columns_to_remove if col in sales_by_week_growth.columns])
 
-    # Format growth columns (round and add percentage symbol, also apply color formatting)
-    def format_growth(val):
+    # Create a styled DataFrame for display
+    def style_negative_red_positive_green(val):
         if isinstance(val, (int, float)):
-            rounded_val = round(val, 2)
-            formatted_val = f"{rounded_val}%"
             color = 'red' if val < 0 else 'green'
-            return f'<span style="color:{color}">{formatted_val}</span>'
-        return val
+            return f'color: {color}'
+        return ''
 
-    # Apply formatting to growth columns
+    # Format the growth percentage columns
     growth_columns = [col for col in sales_by_week_growth.columns if 'growth' in col]
+    week_columns = [col for col in sales_by_week_growth.columns if col.startswith('Week') and not col.endswith('growth')]
+    
     for col in growth_columns:
-        sales_by_week_growth[col] = sales_by_week_growth[col].apply(format_growth)
+        sales_by_week_growth[col] = sales_by_week_growth[col].round(2)
+    for col in week_columns:
+        sales_by_week_growth[col] = sales_by_week_growth[col].round(2)
 
-    # Convert the DataFrame to HTML
-    html_table = sales_by_week_growth.to_html(escape=False)
+    # Create a styled DataFrame
+    styled_df = sales_by_week_growth.style.applymap(
+        style_negative_red_positive_green,
+        subset=growth_columns
+    ).format({
+        **{col: "{:.2f}%" for col in growth_columns},
+        **{col: "{:.2f}" for col in week_columns}
+    })
 
-    # Display the weekly sales with growth percentage using Markdown to allow HTML rendering
+    # Display the weekly sales with growth percentage
     st.markdown("<h4 style='text-align: center; color: green;'>Week-wise Sales with Growth Percentage</h4>", unsafe_allow_html=True)
-    st.markdown(html_table, unsafe_allow_html=True)
+    
+    # Display the interactive dataframe with styling
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        hide_index=True
+    )
 
 
     # Sidebar options for chart customization

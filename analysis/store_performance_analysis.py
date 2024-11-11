@@ -38,6 +38,10 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
     # Merge with all_brands_store_sales to get total store sales
     store_performance = store_performance.merge(all_brands_store_sales, on='storeName', how='left')
 
+    # Ensure the relevant columns are numeric
+    store_performance['total_selling_price'] = pd.to_numeric(store_performance['total_selling_price'], errors='coerce')
+    store_performance['total_store_sales'] = pd.to_numeric(store_performance['total_store_sales'], errors='coerce')
+
     # Calculate the percentage difference between selected brands' sales and total store sales
     store_performance['sales_difference_percentage'] = (
         (store_performance['total_selling_price'] - store_performance['total_store_sales']) / store_performance['total_store_sales']
@@ -111,6 +115,23 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
                 return 'color: green'
         return ''
 
+
+    # Ensure numeric columns are correctly formatted (convert to numeric if necessary)
+    store_performance['total_selling_price'] = pd.to_numeric(store_performance['total_selling_price'], errors='coerce')
+    store_performance['profit'] = pd.to_numeric(store_performance['profit'], errors='coerce')
+    store_performance['total_store_sales'] = pd.to_numeric(store_performance['total_store_sales'], errors='coerce')
+
+    # Round the relevant columns to 2 decimal places
+    store_performance['total_selling_price'] = store_performance['total_selling_price'].round(2)
+    store_performance['profit'] = store_performance['profit'].round(2)
+    store_performance['total_store_sales'] = store_performance['total_store_sales'].round(2)
+
+    # Apply formatting to these columns (keeping them numeric)
+    store_performance['total_selling_price'] = store_performance['total_selling_price'].apply(lambda x: f"{x:.2f}")
+    store_performance['profit'] = store_performance['profit'].apply(lambda x: f"{x:.2f}")
+    store_performance['total_store_sales'] = store_performance['total_store_sales'].apply(lambda x: f"{x:.2f}")
+
+
     # Display data table with conditional formatting
     st.dataframe(store_performance.style.applymap(format_sales_difference, subset=['sales_difference_percentage']))
 
@@ -125,13 +146,19 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
 
     # Separate section for map visualization
     st.markdown("<h3 style='text-align: center; color: blue;'>Store Location Map</h3>", unsafe_allow_html=True)
+
+    # Ensure numeric columns are correctly formatted (convert to numeric if necessary)
+    store_performance['total_selling_price'] = pd.to_numeric(store_performance['total_selling_price'], errors='coerce')
+
+    # Ensure that total_selling_price is numeric before calculating size
+    size_variable = store_performance['total_selling_price'].fillna(0)
     
-    # Plot with bubbles and hover info
+    # Now proceed with the scatter_mapbox plot using this separate size_variable
     fig_map = px.scatter_mapbox(
         store_performance,
         lat='latitude',
         lon='longitude',
-        size='total_selling_price',
+        size=size_variable,
         size_max=50,
         color='storeName',
         hover_name='storeName', 
@@ -139,10 +166,13 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
         title="Store Locations",
         zoom=5,
     )
-    
+
+    # Increase the height of the map
     fig_map.update_layout(
         mapbox_style="open-street-map",
-        height=500,
+        height=800,
     )
-    
+
     st.plotly_chart(fig_map, use_container_width=True)
+
+
