@@ -19,7 +19,6 @@ st.set_page_config(page_title="Brand Analysis Dashboard", layout="wide")
 def load_optimized_data(file):
     return load_data(file)
 
-
 # Cache filtered data with date range and store filter
 @st.cache_data
 def filter_data(_data, brands, stores, start_date, end_date):
@@ -174,7 +173,7 @@ if uploaded_file:
                 category_breakdown_analysis(filtered_data, selected_brands)
                 profit_margin_analysis(filtered_data, selected_brands)
                 top_products_analysis(filtered_data, selected_brands)
-                # brand_comparison_analysis(filtered_data, selected_brands)
+
             else:
                 st.warning("No data found for the selected criteria.")
     except Exception as e:

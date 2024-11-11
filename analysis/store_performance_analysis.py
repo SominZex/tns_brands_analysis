@@ -42,13 +42,12 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
     store_performance['total_selling_price'] = pd.to_numeric(store_performance['total_selling_price'], errors='coerce')
     store_performance['total_store_sales'] = pd.to_numeric(store_performance['total_store_sales'], errors='coerce')
 
-    # Calculate the percentage difference between selected brands' sales and total store sales
-    store_performance['sales_difference_percentage'] = (
-        (store_performance['total_selling_price'] - store_performance['total_store_sales']) / store_performance['total_store_sales']
-    ) * 100
-
-    # Format sales_difference_percentage for better readability
-    store_performance['sales_difference_percentage'] = store_performance['sales_difference_percentage'].apply(lambda x: f"{x:.2f}%")
+    # Calculate the contribution percentage of total_selling_price to total_store_sales
+    store_performance['contribution_percentage'] = (
+        (store_performance['total_selling_price'] / store_performance['total_store_sales']) * 100
+    )
+    # Format contribution_percentage for better readability
+    store_performance['contribution_percentage'] = store_performance['contribution_percentage'].apply(lambda x: f"{x:.2f}%")
 
     # Format profit contribution for better readability
     overall_profit = store_performance['profit'].sum()
@@ -105,8 +104,8 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
 
     st.markdown("<h4 style='text-align: center; color: green;'>Store performance dataframe</h4>", unsafe_allow_html=True)
 
-    # Conditional formatting for negative and positive sales_difference_percentage
-    def format_sales_difference(val):
+    # Conditional formatting for negative and positive contribution_percentage
+    def format_contribution(val):
         if isinstance(val, str) and val.endswith('%'):
             percentage = float(val[:-1])
             if percentage < 0:
@@ -114,7 +113,6 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
             else:
                 return 'color: green'
         return ''
-
 
     # Ensure numeric columns are correctly formatted (convert to numeric if necessary)
     store_performance['total_selling_price'] = pd.to_numeric(store_performance['total_selling_price'], errors='coerce')
@@ -131,9 +129,8 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
     store_performance['profit'] = store_performance['profit'].apply(lambda x: f"{x:.2f}")
     store_performance['total_store_sales'] = store_performance['total_store_sales'].apply(lambda x: f"{x:.2f}")
 
-
     # Display data table with conditional formatting
-    st.dataframe(store_performance.style.applymap(format_sales_difference, subset=['sales_difference_percentage']))
+    st.dataframe(store_performance.style.applymap(format_contribution, subset=['contribution_percentage']))
 
     # Load GPS coordinates for stores from CSV file
     gps_df = load_coordinates()
@@ -174,5 +171,3 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
     )
 
     st.plotly_chart(fig_map, use_container_width=True)
-
-

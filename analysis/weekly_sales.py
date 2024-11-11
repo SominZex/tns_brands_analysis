@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+
 def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     st.markdown("<h1 style='text-align: center; color: green;'>Weekly Sales</h1>", unsafe_allow_html=True)
 
@@ -111,6 +112,10 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     columns_to_remove = ['month', 'Week 5', 'Week 5_growth']
     sales_by_week_growth = sales_by_week_growth.drop(columns=[col for col in columns_to_remove if col in sales_by_week_growth.columns])
 
+    # Calculate average growth for week_2_growth, week_3_growth, and week_4_growth
+    # Add this to the existing DataFrame
+    sales_by_week_growth['average_growth'] = sales_by_week_growth[['Week 2_growth', 'Week 3_growth', 'Week 4_growth']].mean(axis=1).round(2)
+
     # Create a styled DataFrame for display
     def style_negative_red_positive_green(val):
         if isinstance(val, (int, float)):
@@ -121,7 +126,7 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     # Format the growth percentage columns
     growth_columns = [col for col in sales_by_week_growth.columns if 'growth' in col]
     week_columns = [col for col in sales_by_week_growth.columns if col.startswith('Week') and not col.endswith('growth')]
-    
+
     for col in growth_columns:
         sales_by_week_growth[col] = sales_by_week_growth[col].round(2)
     for col in week_columns:
@@ -145,7 +150,6 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
         use_container_width=True,
         hide_index=True
     )
-
 
     # Sidebar options for chart customization
     st.sidebar.subheader("Weekly Sales Chart Settings")
@@ -201,8 +205,6 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
         )
         fig.update_layout(height=600)
 
-
-
     # Plot the sales trend by week for each brand (added plot)
     sales_by_week_trend = sales_by_week.melt(id_vars=['month', 'brandName'], value_vars=sales_by_week.columns[2:], 
                                              var_name='week_label', value_name='total_selling_price')
@@ -221,14 +223,6 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     # Display the weekly sales trend plot
     st.plotly_chart(fig_week_trend, use_container_width=True)
 
-
     # Display the Plotly chart in Streamlit with container width adjustment
     st.plotly_chart(fig, use_container_width=True)
-
-    # Display the original weekly sales dataframe (existing analysis)
-    # st.markdown("<h4 style='text-align: center; color: green;'>Weekly Sales Dataframe</h4>", unsafe_allow_html=True)
-    # st.dataframe(sales_by_day)
-
-
-
 
