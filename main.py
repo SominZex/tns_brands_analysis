@@ -20,7 +20,6 @@ def load_optimized_data(file):
     return load_data(file)
 
 
-
 # Cache filtered data with date range and store filter
 @st.cache_data
 def filter_data(_data, brands, stores, start_date, end_date):

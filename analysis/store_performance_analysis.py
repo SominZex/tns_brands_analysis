@@ -2,6 +2,12 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# Load the GPS coordinates from the CSV file
+def load_coordinates(file_path="gps_co_ordinates/co_ordinates.csv"):
+    gps_df = pd.read_csv(file_path)
+    return gps_df[['storeName', 'latitude', 'longitude']]
+
+# Function to display store performance analysis
 def store_performance_analysis(data, date_filtered_data, selected_brands, selected_stores):
     st.markdown("<h1 style='text-align: center; color: green;'>Stores Performance</h1>", unsafe_allow_html=True)
 
@@ -107,3 +113,36 @@ def store_performance_analysis(data, date_filtered_data, selected_brands, select
 
     # Display data table with conditional formatting
     st.dataframe(store_performance.style.applymap(format_sales_difference, subset=['sales_difference_percentage']))
+
+    # Load GPS coordinates for stores from CSV file
+    gps_df = load_coordinates()
+    
+    # Merge preloaded GPS coordinates with store_performance
+    store_performance = store_performance.merge(gps_df, on='storeName', how='left')
+
+    # Filter out stores without valid latitude and longitude
+    store_performance = store_performance.dropna(subset=['latitude', 'longitude'])
+
+    # Separate section for map visualization
+    st.markdown("<h3 style='text-align: center; color: blue;'>Store Location Map</h3>", unsafe_allow_html=True)
+    
+    # Plot with bubbles and hover info
+    fig_map = px.scatter_mapbox(
+        store_performance,
+        lat='latitude',
+        lon='longitude',
+        size='total_selling_price',
+        size_max=50,
+        color='storeName',
+        hover_name='storeName', 
+        hover_data={'storeName': True, 'total_selling_price': True},
+        title="Store Locations",
+        zoom=5,
+    )
+    
+    fig_map.update_layout(
+        mapbox_style="open-street-map",
+        height=500,
+    )
+    
+    st.plotly_chart(fig_map, use_container_width=True)
