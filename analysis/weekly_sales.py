@@ -113,8 +113,12 @@ def weekly_sales_analysis(data, selected_brands_sidebar, top_brands):
     sales_by_week_growth = sales_by_week_growth.drop(columns=[col for col in columns_to_remove if col in sales_by_week_growth.columns])
 
     # Calculate average growth for week_2_growth, week_3_growth, and week_4_growth
-    # Add this to the existing DataFrame
-    sales_by_week_growth['average_growth'] = sales_by_week_growth[['Week 2_growth', 'Week 3_growth', 'Week 4_growth']].mean(axis=1).round(2)
+    # Calculate average growth for available growth columns dynamically
+    available_growth_columns = [col for col in sales_by_week_growth.columns if col.endswith('_growth') and col != 'average_growth']
+    if available_growth_columns:
+        sales_by_week_growth['average_growth'] = sales_by_week_growth[available_growth_columns].mean(axis=1).round(2)
+    else:
+        sales_by_week_growth['average_growth'] = 0
 
     # Create a styled DataFrame for display
     def style_negative_red_positive_green(val):
